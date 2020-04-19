@@ -6,10 +6,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.startTiles     = 2;
 
-  this.inputManager.on("move", this.move.bind(this));
-  this.inputManager.on("restart", this.restart.bind(this));
-  this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
-
   this.setup();
 }
 
@@ -34,36 +30,58 @@ GameManager.prototype.isGameTerminated = function () {
 // Set up the game
 GameManager.prototype.setup = function () {
   var previousState = this.storageManager.getGameState();
-
-  // Reload the game from a previous game if present
-  if (previousState) {
-    this.grid        = new Grid(previousState.grid.size,
-                                previousState.grid.cells); // Reload grid
-    this.score       = previousState.score;
-    this.over        = previousState.over;
-    this.won         = previousState.won;
-    this.keepPlaying = previousState.keepPlaying;
-  } else {
-    this.grid        = new Grid(this.size);
-    this.score       = 0;
-    this.over        = false;
-    this.won         = false;
-    this.keepPlaying = false;
-
-    // Add the initial tiles
-    this.addStartTiles();
-  }
-
-  // Update the actuator
+  this.grid        = new Grid(9,3); 
+  
+  this.addStartTiles();
   this.actuate();
+
 };
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
-  for (var i = 0; i < this.startTiles; i++) {
-    this.addRandomTile();
+  for (var x = 0; x < this.grid.width; x++) {
+    var list = this.randomListInRange(x*10 + 1,(x+1)*10,3);
+    for (var y = 0; y < this.grid.height; y++) {
+        var cell = { x: x , y: y};
+        var tile = new Tile(cell, list[y]);
+        this.grid.insertTile(tile);
+    }
+  }
+  for (var y = 0; y < this.grid.height; y++) {
+    var list = this.randomListInRange(0,this.grid.width-1,4);
+    for (var x = 0; x < list.length; x++) {
+      var cell = { x: list[x] , y: y};
+      var tile = new Tile(cell);
+      this.grid.removeTile(tile);
+    }
   }
 };
+
+GameManager.prototype.randomListInRange = function(min,max,count) {
+  var list = [];
+  for(var i = min; i <= max; i++) {
+    list.push(i);
+  }
+  list = this.shuffle(list);
+  return list.slice(0,count).sort(this.sortNumber);
+}
+
+
+GameManager.prototype.sortNumber = function(a, b) {
+  return a - b;
+}
+
+GameManager.prototype.shuffle = function(list) {
+  var i = list.length, j, temp;
+  if ( i == 0 ) return list;
+  while ( --i ) {
+     j = Math.floor( Math.random() * ( i + 1 ) );
+     temp = list[i];
+     list[i] = list[j];
+     list[j] = temp;
+  }
+  return list;
+}
 
 // Adds a tile in a random position
 GameManager.prototype.addRandomTile = function () {
@@ -74,7 +92,9 @@ GameManager.prototype.addRandomTile = function () {
     this.grid.insertTile(tile);
   }
 };
-
+GameManager.prototype.getRandomInt = function(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
 // Sends the updated grid to the actuator
 GameManager.prototype.actuate = function () {
   if (this.storageManager.getBestScore() < this.score) {
