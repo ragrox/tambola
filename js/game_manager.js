@@ -15,14 +15,14 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.gaps.push([1,0,1,0,1,1,0,1,0]);
   this.gaps.push([1,1,0,1,0,1,0,1,0]);
   this.startTiles     = 2;
-
+  this.inputManager.on("move", this.move.bind(this));
+  this.inputManager.on("restart", this.restart.bind(this));
+  this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
   this.setup();
 }
 
 // Restart the game
 GameManager.prototype.restart = function () {
-  this.storageManager.clearGameState();
-  this.actuator.continueGame(); // Clear the game won/lost message
   this.setup();
 };
 
@@ -39,9 +39,8 @@ GameManager.prototype.isGameTerminated = function () {
 
 // Set up the game
 GameManager.prototype.setup = function () {
-  var previousState = this.storageManager.getGameState();
   this.grid        = new Grid(9,3); 
-  
+  this.actuator.clear(this.grid);
   this.addStartTiles();
   this.actuate();
 

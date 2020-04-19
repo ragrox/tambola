@@ -7,11 +7,10 @@ function HTMLActuator() {
   this.score = 0;
 }
 
-HTMLActuator.prototype.actuate = function (grid, metadata) {
+HTMLActuator.prototype.actuate = function (grid) {
   var self = this;
 
   window.requestAnimationFrame(function () {
-    self.clearContainer(self.tileContainer);
 
     grid.cells.forEach(function (column) {
       column.forEach(function (cell) {
@@ -20,18 +19,19 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
         }
       });
     });
-
-    if (metadata.terminated) {
-      if (metadata.over) {
-        self.message(false); // You lose
-      } else if (metadata.won) {
-        self.message(true); // You win!
-      }
-    }
-
   });
 };
 
+HTMLActuator.prototype.clear = function (grid) {
+  var self = this;
+
+    for (var x = 0; x < grid.width; x++) {
+      for (var y = 0; y < grid.height; y++) {
+        var cell = {x:x , y:y};
+        this.removeTile(cell); 
+      }
+    }
+};
 // Continues the game (both restart and keep playing)
 HTMLActuator.prototype.continueGame = function () {
   this.clearMessage();
@@ -60,6 +60,13 @@ HTMLActuator.prototype.addTile = function (tile) {
 
   // Put the tile on the board
   cellContainer.appendChild(wrapper);
+};
+
+HTMLActuator.prototype.removeTile = function (tile) {
+  var self = this;
+  var cellContainer    = document.getElementById("grid-cell-"+ tile.y + "-" + tile.x);
+  if(cellContainer.firstChild)
+    cellContainer.removeChild(cellContainer.firstChild);
 };
 
 HTMLActuator.prototype.applyClasses = function (element, classes) {
