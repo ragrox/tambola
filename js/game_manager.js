@@ -3,7 +3,17 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-
+  this.gaps = [];
+  this.gaps.push([1,0,1,0,1,0,1,0,1]);
+  this.gaps.push([0,1,1,0,1,0,1,0,1]);
+  this.gaps.push([0,1,0,1,0,1,0,1,1]);
+  this.gaps.push([0,1,0,1,1,0,1,0,1]);
+  this.gaps.push([0,1,0,1,0,1,1,0,1]);
+  this.gaps.push([0,1,0,1,1,0,1,1,0]);
+  this.gaps.push([1,1,0,1,0,1,0,1,0]);
+  this.gaps.push([1,0,1,1,0,1,0,1,0]);
+  this.gaps.push([1,0,1,0,1,1,0,1,0]);
+  this.gaps.push([1,1,0,1,0,1,0,1,0]);
   this.startTiles     = 2;
 
   this.setup();
@@ -39,31 +49,34 @@ GameManager.prototype.setup = function () {
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
-  for (var x = 0; x < this.grid.width; x++) {
-    var list = this.randomListInRange(x*10 + 1,(x+1)*10,3);
+  while(true) {
+    for (var x = 0; x < this.grid.width; x++) {
+      var list = this.randomListInRange(x*10 + 1,(x+1)*10,3);
+      for (var y = 0; y < this.grid.height; y++) {
+          var cell = { x: x , y: y};
+          var tile = new Tile(cell, list[y]);
+          this.grid.insertTile(tile);
+      }
+    }
     for (var y = 0; y < this.grid.height; y++) {
-        var cell = { x: x , y: y};
-        var tile = new Tile(cell, list[y]);
-        this.grid.insertTile(tile);
+      var list = this.gaps[this.getRandomInt(this.gaps.length)];
+      for (var x = 0; x < this.grid.width; x++) {
+        if(list[x] == 0){
+          var cell = { x: x , y: y};
+          this.grid.removeTile(cell);
+        }
+      }
     }
-  }
-  for (var y = 0; y < this.grid.height; y++) {
-    var list = this.randomListInRange(0,this.grid.width-1,4);
-    for (var x = 0; x < list.length; x++) {
-      var cell = { x: list[x] , y: y};
-      var tile = new Tile(cell);
-      this.grid.removeTile(tile);
-    }
+    if(this.grid.isValid())  break;
+    this.grid.empty();
   }
 };
-
 GameManager.prototype.randomListInRange = function(min,max,count) {
   var list = [];
   for(var i = min; i <= max; i++) {
     list.push(i);
   }
-  list = this.shuffle(list);
-  return list.slice(0,count).sort(this.sortNumber);
+  return this.shuffle(list).slice(0,count).sort(this.sortNumber);
 }
 
 

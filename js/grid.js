@@ -19,6 +19,18 @@ Grid.prototype.empty = function () {
   return cells;
 };
 
+Grid.prototype.isValid = function () {
+  for (var x = 0; x < this.width; x++) {
+    var emptyCols = 0;
+    for (var y = 0; y < this.height; y++) {
+      var cell = {x:x , y:y};
+      if (this.cellAvailable(cell)) emptyCols++;
+    }
+    if( emptyCols == this.height) return false;
+  }
+
+  return true;
+};
 Grid.prototype.fromState = function (state) {
   var cells = [];
 
